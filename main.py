@@ -17,6 +17,8 @@ from numpy import genfromtxt
 import pandas as pd
 from fr_utils import *
 from inception_blocks_v2 import *
+import os
+import shutil
 
 FRmodel = faceRecoModel(input_shape=(3, 96, 96))
 
@@ -56,14 +58,18 @@ database["bertrand"] = img_to_encoding("images/bertrand.jpg", FRmodel)
 database["kevin"] = img_to_encoding("images/kevin.jpg", FRmodel)
 database["benoit"] = img_to_encoding("images/benoit.jpg", FRmodel)
 database["arnaud"] = img_to_encoding("images/arnaud.jpg", FRmodel)
+database["ananya"] = img_to_encoding("images/ananya.jpg", FRmodel)
 
+for key in database:
+    path = "/content/Face-Recognition/" + key
+    os.mkdir(path) 
 
 def verify(image_path, identity, database, model):
     
     encoding = img_to_encoding(image_path, model)
     dist = np.linalg.norm(encoding - database[identity])
     
-    if dist < 0.7:
+    if dist < 0.6:
         print("It's " + str(identity))
         door_open = True
     else:
@@ -73,19 +79,23 @@ def verify(image_path, identity, database, model):
     return door_open
 
 
-verify("images/camera_0.jpg", "younes", database, FRmodel)
-verify("images/camera_2.jpg", "kian", database, FRmodel)
+# verify("images/camera_0.jpg", "younes", database, FRmodel)
+# verify("images/camera_2.jpg", "kian", database, FRmodel)
 
 yourpath = '/content/Face-Recognition/images'
 
-import os
-import shutil
+
 for root, dirs, files in os.walk(yourpath, topdown=False):
   for name in files:
     print(name)
-    if (verify('/content/Face-Recognition/images/' + str(name), "younes", database, FRmodel)):
-      shutil.move('/content/Face-Recognition/images/' + str(name), "/content/Face-Recognition/images2/")
+    for key in database:
+        if (verify('/content/Face-Recognition/images/' + str(name), key, database, FRmodel)):
+            shutil.move('/content/Face-Recognition/images/' + str(name), "/content/Face-Recognition/" + key + "/")
+            break
 
+    # if (verify('/content/Face-Recognition/images/' + str(name), "younes", database, FRmodel)):
+    #     shutil.move('/content/Face-Recognition/images/' + str(name), "/content/Face-Recognition/images2/")
+    
 
 
 # def who_is_it(image_path, database, model):
